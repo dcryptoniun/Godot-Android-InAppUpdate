@@ -1,101 +1,233 @@
-# Godot Android Plugin Template
-This repository serves as a quickstart template for building a Godot Android plugin for Godot 4.2+.
+# Godot Android In-App Update Plugin
 
-## Contents
-* An illustrative simple Godot project: [`plugin/demo`](plugin/demo)
-* Preconfigured gradle build file to build and package the contents for the Android plugin: 
-  [`plugin/build.gradle.kts`](plugin/build.gradle.kts)
-* Preconfigured export scripts template: 
-  [`plugin/export_scripts_template`](plugin/export_scripts_template)
-* Preconfigured manifest for the Android plugin:
-  [`plugin/src/main/AndroidManifest.xml`](plugin/src/main/AndroidManifest.xml)
-* Preconfigured source files for the Kotlin/Java logic of the Android plugin: 
-  [`plugin/src/main/java`](plugin/src/main/java)
+A Godot 4.5+ Android plugin for Google Play In-App Updates using the Play Core library.  
+Supports both **Flexible** and **Immediate** update flows.
 
-## Usage
-**Note:** 
-- [Android Studio](https://developer.android.com/studio) is the recommended IDE for
-developing Godot Android plugins. 
-You can install the latest version from https://developer.android.com/studio.
-- Java 17 is the minimum required Java version.
+**Author:** Mayank Meena  
+**License:** MIT
 
-To use this template, log in to github and click the green "Use this template" button at the top 
-of the repository page.
-This will let you create a copy of this repository with a clean git history.
+---
 
-### Configuring the template
-After cloning your own copy to your local machine, configure the project as needed. Several 
-`TODO` have been added to the project to help identify where changes are needed; here's an 
-overview of the minimum set of modifications needed:
-* Update the name of the Android plugin. Note that the name should not contain any spaces:
-  * Open [`settings.gradle.kts`](settings.gradle.kts) and update the value for `rootProject.name`
-  * Open [`plugin/build.gradle.kts`](plugin/build.gradle.kts) and update the value for `pluginName`
-  * Open [`plugin/export_scripts_template/plugin.cfg`](plugin/export_scripts_template/plugin.cfg)
-    and update the value for `name`
-  * Open [`plugin/export_scripts_template/export_plugin.gd`](plugin/export_scripts_template/export_plugin.gd)
-    and update the value for `_plugin_name`
-* Update the package name of the Android plugin:
-  * Open [`plugin/build.gradle.kts`](plugin/build.gradle.kts) and update the value for `pluginPackageName`
-  * Make sure subdirectories under [`plugin/src/main/java`](plugin/src/main/java) match the 
-    updated package name
-  * Make sure that `package` at the top of [`GodotAndroidPlugin.kt`](plugin/src/main/java/org/godotengine/plugin/android/template/GodotAndroidPlugin.kt)
-    matches the updated package name
-* Complete the plugin configuration
-  * Open [`plugin/export_scripts_template/plugin.cfg`](plugin/export_scripts_template/plugin.cfg)
-    * Update the `description` field
-    * Update the `author` field
-    * Update the `version` field
+## Features
 
-### Building the configured Android plugin
-- In a terminal window, navigate to the project's root directory and run the following command:
-```
+- ✅ Check if an update is available on Google Play
+- ✅ Start **Flexible** updates (background download, user continues using app)
+- ✅ Start **Immediate** updates (full-screen Google Play UI, auto-restart)
+- ✅ Monitor download progress with signals
+- ✅ Complete flexible updates (trigger app restart after download)
+- ✅ Automatically resumes stalled immediate updates on app resume
+- ✅ Exposes update staleness days and update priority
+- ✅ Clean GDScript wrapper with typed signals
+
+---
+
+## Setup
+
+### 1. Build the Plugin
+
+```bash
+# From the project root
 ./gradlew assemble
 ```
-- On successful completion of the build, the output files can be found in
-  [`plugin/demo/addons`](plugin/demo/addons)
 
-### Testing the Android plugin
-You can use the included [Godot demo project](plugin/demo/project.godot) to test the built Android 
-plugin
+This compiles the AAR and copies it along with the export scripts to `plugin/demo/addons/GodotAndroidInAppUpdate/`.
 
-- Open the demo in Godot (4.2 or higher)
-- Navigate to `Project` -> `Project Settings...` -> `Plugins`, and ensure the plugin is enabled
-- Install the Godot Android build template by clicking on `Project` -> `Install Android Build Template...`
-- Open [`plugin/demo/main.gd`](plugin/demo/main.gd) and update the logic as needed to reference 
-  your plugin and its methods
-- Connect an Android device to your machine and run the demo on it
+### 2. Install in Your Godot Project
 
-#### Tips
-Additional dependencies added to [`plugin/build.gradle.kts`](plugin/build.gradle.kts) should be added to the `_get_android_dependencies`
-function in [`plugin/export_scripts_template/export_plugin.gd`](plugin/export_scripts_template/export_plugin.gd).
-
-##### Simplify access to the exposed Java / Kotlin APIs
-
-To make it easier to access the exposed Java / Kotlin APIs in the Godot Editor, it's recommended to 
-provide one (or multiple) gdscript wrapper class(es) for your plugin users to interface with.
-
-For example:
+Copy the `addons/GodotAndroidInAppUpdate/` folder into your Godot project's `addons/` directory:
 
 ```
-class_name PluginInterface extends Object
-
-## Interface used to access the functionality provided by this plugin
-
-var _plugin_name = "GDExtensionAndroidPluginTemplate"
-var _plugin_singleton
-
-func _init():
-	if Engine.has_singleton(_plugin_name):
-		_plugin_singleton = Engine.get_singleton(_plugin_name)
-	else:
-		printerr("Initialization error: unable to access the java logic")
-
-## Shows a 'Hello World' toast.
-func helloWorld():
-	if _plugin_singleton:
-		_plugin_singleton.helloWorld()
-	else:
-		printerr("Initialization error")
-
+your_project/
+├── addons/
+│   └── GodotAndroidInAppUpdate/
+│       ├── plugin.cfg
+│       ├── export_plugin.gd
+│       ├── in_app_update.gd
+│       └── bin/
+│           ├── debug/
+│           │   └── GodotAndroidInAppUpdate-debug.aar
+│           └── release/
+│               └── GodotAndroidInAppUpdate-release.aar
 ```
 
+### 3. Enable the Plugin
+
+1. Open your project in Godot Editor.
+2. Go to **Project → Project Settings → Plugins**.
+3. Enable **GodotAndroidInAppUpdate**.
+
+### 4. Use Custom Android Build
+
+In-App Updates require a custom Android build:
+
+1. Go to **Project → Install Android Build Template**.
+2. In **Export → Android**, enable **Use Gradle Build**.
+
+---
+
+## Usage
+
+### Option A: Use the GDScript Wrapper (Recommended)
+
+Add `in_app_update.gd` as an **AutoLoad** singleton (e.g., named `InAppUpdate`):
+
+1. Go to **Project → Project Settings → Autoload**.
+2. Add `res://addons/GodotAndroidInAppUpdate/in_app_update.gd` as `InAppUpdate`.
+
+Then use it in your scripts:
+
+```gdscript
+extends Node
+
+func _ready() -> void:
+    InAppUpdate.update_info_received.connect(_on_update_info)
+    InAppUpdate.update_status_changed.connect(_on_status_changed)
+    InAppUpdate.update_check_failed.connect(_on_check_failed)
+    InAppUpdate.update_flow_result.connect(_on_flow_result)
+
+    # Check for updates when the game starts
+    InAppUpdate.check_for_update()
+
+
+func _on_update_info(
+        is_available: bool,
+        is_flexible: bool,
+        is_immediate: bool,
+        version_code: int,
+        staleness_days: int,
+        priority: int
+) -> void:
+    if not is_available:
+        print("App is up to date!")
+        return
+
+    print("Update available! Version: ", version_code)
+
+    # Choose update type based on priority
+    if priority >= 4 or staleness_days > 7:
+        # High priority or stale → force immediate update
+        InAppUpdate.start_immediate_update()
+    elif is_flexible:
+        # Otherwise, use flexible update
+        InAppUpdate.start_flexible_update()
+
+
+func _on_status_changed(status: int, downloaded: int, total: int) -> void:
+    match status:
+        InAppUpdate.InstallStatus.DOWNLOADING:
+            var percent: float = 0.0
+            if total > 0:
+                percent = float(downloaded) / float(total) * 100.0
+            print("Downloading: %.1f%%" % percent)
+        InAppUpdate.InstallStatus.DOWNLOADED:
+            # Update downloaded! Prompt user or complete immediately
+            print("Update downloaded! Installing...")
+            InAppUpdate.complete_flexible_update()
+        InAppUpdate.InstallStatus.FAILED:
+            print("Update failed!")
+        InAppUpdate.InstallStatus.CANCELED:
+            print("Update canceled by user.")
+
+
+func _on_check_failed(error: String) -> void:
+    print("Update check failed: ", error)
+
+
+func _on_flow_result(result_code: int) -> void:
+    if result_code == InAppUpdate.RESULT_OK:
+        print("User accepted update")
+    else:
+        print("User declined update (code: %d)" % result_code)
+```
+
+### Option B: Use the Plugin Singleton Directly
+
+```gdscript
+var plugin: Object
+
+func _ready() -> void:
+    if Engine.has_singleton("GodotAndroidInAppUpdate"):
+        plugin = Engine.get_singleton("GodotAndroidInAppUpdate")
+        plugin.connect("update_info_received", _on_update_info)
+        plugin.connect("update_status_changed", _on_status_changed)
+        plugin.connect("update_check_failed", _on_check_failed)
+        plugin.connect("update_flow_result", _on_flow_result)
+        plugin.checkUpdateAvailable()
+```
+
+---
+
+## API Reference
+
+### Methods
+
+| Method | Description |
+|---|---|
+| `checkUpdateAvailable()` | Checks if an update is available. Emits `update_info_received` or `update_check_failed`. |
+| `startFlexibleUpdate()` | Starts a flexible (background) update flow. |
+| `startImmediateUpdate()` | Starts an immediate (full-screen) update flow. |
+| `completeFlexibleUpdate()` | Installs a downloaded flexible update and restarts the app. |
+
+### Signals
+
+| Signal | Parameters | Description |
+|---|---|---|
+| `update_info_received` | `is_available: bool, is_flexible_allowed: bool, is_immediate_allowed: bool, available_version_code: int, staleness_days: int, update_priority: int` | Emitted after `checkUpdateAvailable()` succeeds. |
+| `update_check_failed` | `error_message: String` | Emitted when the update check fails. |
+| `update_status_changed` | `status: int, bytes_downloaded: int, total_bytes_to_download: int` | Emitted during flexible update download/install. |
+| `update_flow_result` | `result_code: int` | Emitted when user accepts/cancels the update dialog. |
+
+### Install Status Constants
+
+| Constant | Value | Description |
+|---|---|---|
+| `STATUS_UNKNOWN` | 0 | Unknown status |
+| `STATUS_PENDING` | 1 | Update is pending |
+| `STATUS_DOWNLOADING` | 2 | Update is downloading |
+| `STATUS_DOWNLOADED` | 3 | Update downloaded, ready to install |
+| `STATUS_INSTALLING` | 4 | Update is being installed |
+| `STATUS_INSTALLED` | 5 | Update installed successfully |
+| `STATUS_FAILED` | 6 | Update failed |
+| `STATUS_CANCELED` | 7 | Update was canceled |
+
+---
+
+## Update Flows Explained
+
+### Flexible Update
+1. Call `checkUpdateAvailable()` → receive `update_info_received`
+2. Call `startFlexibleUpdate()` → Google Play shows a small consent dialog
+3. User accepts → download happens in background
+4. Listen for `update_status_changed` with status `DOWNLOADED` (3)
+5. Call `completeFlexibleUpdate()` → app restarts with the new version
+
+### Immediate Update
+1. Call `checkUpdateAvailable()` → receive `update_info_received`
+2. Call `startImmediateUpdate()` → Google Play takes over the full screen
+3. Google Play handles everything; app restarts automatically
+
+---
+
+## Important Notes
+
+- **In-app updates only work on devices with Google Play** and when your app is distributed via the Play Store.
+- **Testing locally** (via USB debug) will report `NOT_AVAILABLE` since there's no Play Store update to compare against.
+- **To test**, upload your app to a Play Console test track (Internal Testing or Internal App Sharing), install the older version, then upload a newer `versionCode`.
+- **Immediate updates** are automatically resumed if the app returns to foreground while an update is in progress.
+
+---
+
+## Demo Project
+
+The `plugin/demo/` folder contains a ready-to-use Godot project that demonstrates all update flows with buttons and a log panel. Build and deploy it to test:
+
+```bash
+./gradlew assemble
+# Then open plugin/demo/ in Godot, export to Android, and test.
+```
+
+---
+
+## License
+
+MIT License - See [LICENSE](LICENSE) for details.

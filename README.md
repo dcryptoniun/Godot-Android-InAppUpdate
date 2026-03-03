@@ -13,6 +13,13 @@
   <b>Author:</b> Mayank Meena &nbsp;|&nbsp; <b>License:</b> MIT
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/dcryptoniun/Godot-Android-InAppUpdate/main/docs/assets/demo.jpg" alt="In-App Update Demo" width="300">
+</p>
+<p align="center">
+  <em>Screenshot from <a href="https://play.google.com/store/apps/details?id=com.gerstudio.bbrpg">Block Blast RPG – Puzzle Quest</a> on Google Play, which uses this plugin.</em>
+</p>
+
 ---
 
 ## Features
@@ -28,20 +35,63 @@
 
 ---
 
-## Setup
+## How It Works
 
-### 1. Build the Plugin
+Once integrated, the plugin will automatically handle in-app updates based on how you publish your app:
+
+| Upload Method | Update Priority | Behavior |
+|---|---|---|
+| **Google Play Console (Web)** | Always `0` | Shows an **optional (flexible) update** dialog. Users can skip or update later. |
+| **Google Play Developer API / Fastlane** | `0` – `5` (configurable) | You control the priority. Use `priority >= 4` to trigger a **forced (immediate) update**. |
+
+**Staleness-based force update:** Even when uploading via the web (priority = 0), you can use `staleness_days` to force an update after a threshold. For example, if the update has been available for more than 7 days, trigger an immediate update — ensuring all users eventually get critical fixes.
+
+```gdscript
+# Example: Optional update by default, forced after 7 days
+if priority >= 4 or staleness_days > 7:
+    InAppUpdate.start_immediate_update()   # Force update
+elif is_flexible:
+    InAppUpdate.start_flexible_update()     # Optional update
+```
+
+---
+
+## Installation
+
+### Option A: Download from GitHub Releases (Recommended)
+
+1. Go to the [**Releases**](https://github.com/dcryptoniun/Godot-Android-InAppUpdate/releases) page.
+2. Download the latest release `.zip` file.
+3. Extract the `addons/GodotAndroidInAppUpdate/` folder into your Godot project.
+
+### Option B: Copy from the Demo Project
+
+If you've cloned this repository, you can copy the pre-built plugin directly:
 
 ```bash
-# From the project root
+# Build first
+./gradlew assemble
+
+# Then copy the addons folder
+cp -r plugin/demo/addons/GodotAndroidInAppUpdate/ /path/to/your_project/addons/
+```
+
+### Option C: Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/dcryptoniun/Godot-Android-InAppUpdate.git
+cd Godot-Android-InAppUpdate
+
+# Build
 ./gradlew assemble
 ```
 
 This compiles the AAR and copies it along with the export scripts to `plugin/demo/addons/GodotAndroidInAppUpdate/`.
 
-### 2. Install in Your Godot Project
+### Project Structure
 
-Copy the `addons/GodotAndroidInAppUpdate/` folder into your Godot project's `addons/` directory:
+After installation, your project should look like:
 
 ```
 your_project/
@@ -57,13 +107,13 @@ your_project/
 │               └── GodotAndroidInAppUpdate-release.aar
 ```
 
-### 3. Enable the Plugin
+### Enable the Plugin
 
 1. Open your project in Godot Editor.
 2. Go to **Project → Project Settings → Plugins**.
 3. Enable **GodotAndroidInAppUpdate**.
 
-### 4. Use Custom Android Build
+### Use Custom Android Build
 
 In-App Updates require a custom Android build:
 
@@ -255,12 +305,6 @@ However, **Staleness Days** will still work! `staleness_days` indicates how many
 ## Demo Project
 
 The `plugin/demo/` folder contains a ready-to-use Godot project that demonstrates all update flows with buttons and a log panel.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/dcryptoniun/Godot-Android-InAppUpdate/main/docs/assets/demo.jpg" alt="Demo Screenshot" width="400">
-</p>
-
-Build and deploy it to test:
 
 ```bash
 ./gradlew assemble

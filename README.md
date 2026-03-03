@@ -1,10 +1,17 @@
-# Godot Android In-App Update Plugin
+<p align="center">
+  <img src="https://raw.githubusercontent.com/dcryptoniun/Godot-Android-InAppUpdate/main/docs/assets/Plugin.png" alt="Godot Android In-App Update Plugin" width="200">
+</p>
 
-A Godot 4.5+ Android plugin for Google Play In-App Updates using the Play Core library.  
-Supports both **Flexible** and **Immediate** update flows.
+<h1 align="center">Godot Android In-App Update Plugin</h1>
 
-**Author:** Mayank Meena  
-**License:** MIT
+<p align="center">
+  A Godot 4.5+ Android plugin for Google Play In-App Updates using the Play Core library.<br>
+  Supports both <b>Flexible</b> and <b>Immediate</b> update flows.
+</p>
+
+<p align="center">
+  <b>Author:</b> Mayank Meena &nbsp;|&nbsp; <b>License:</b> MIT
+</p>
 
 ---
 
@@ -192,6 +199,34 @@ func _ready() -> void:
 
 ---
 
+## Setting Update Priority
+
+The **Update Priority** (0 to 5) cannot be set via the Google Play Console web interface. It must be set at the time of publication using the **Google Play Developer API**.
+
+### How to set it:
+
+1.  **Using the Google Play Developer API (Recommended for CI/CD):**
+    If you use automated tools to upload your builds, you can set the `updatePriority` in the `Edits.tracks` resource. The field is an integer between `0` (default) and `5` (highest priority).
+
+2.  **Using Fastlane (Supply):**
+    If you use [Fastlane](https://fastlane.tools/), you can specify the priority in your `Appfile` or directly in the `upload_to_play_store` command:
+    ```ruby
+    upload_to_play_store(
+      track: 'production',
+      update_priority: 5
+    )
+    ```
+
+3.  **Manual Workaround (via API):**
+    If you don't have an automated pipeline, you would need to use a tool like **Google API Explorer** or a custom script to "patch" the release track after the build has been uploaded but before it is fully released.
+
+### What happens if I upload via the Play Console (Web)?
+If you upload your app via the browser, the **Update Priority will always be 0**. 
+
+However, **Staleness Days** will still work! `staleness_days` indicates how many days have passed since the update became available on the Play Store, regardless of how it was uploaded. You can use this value as a fallback to force updates after a certain period (e.g., if `staleness_days > 30`).
+
+---
+
 ## Update Flows Explained
 
 ### Flexible Update
@@ -219,7 +254,13 @@ func _ready() -> void:
 
 ## Demo Project
 
-The `plugin/demo/` folder contains a ready-to-use Godot project that demonstrates all update flows with buttons and a log panel. Build and deploy it to test:
+The `plugin/demo/` folder contains a ready-to-use Godot project that demonstrates all update flows with buttons and a log panel.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/dcryptoniun/Godot-Android-InAppUpdate/main/docs/assets/demo.jpg" alt="Demo Screenshot" width="400">
+</p>
+
+Build and deploy it to test:
 
 ```bash
 ./gradlew assemble
